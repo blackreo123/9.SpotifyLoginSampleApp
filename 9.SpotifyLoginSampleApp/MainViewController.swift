@@ -28,6 +28,13 @@ class MainViewController: UIViewController {
                                 """
     }
     @IBAction func logoutButtonTapped(_ sender: UIButton) {
-        self.navigationController?.popToRootViewController(animated: true)
+        let fierbaseAuth = Auth.auth()
+        do {
+            try fierbaseAuth.signOut()
+            self.navigationController?.popToRootViewController(animated: true)
+        } catch let signOutError as NSError {
+            print("ERROR: \(signOutError.localizedDescription)")
+        }
+        
     }
 }

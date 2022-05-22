@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import FirebaseAuth
 
 class EnterEmailViewController: UIViewController {
     
@@ -30,7 +31,46 @@ class EnterEmailViewController: UIViewController {
         self.navigationController?.navigationBar.isHidden = false
     }
     @IBAction func nextButtonTapped(_ sender: UIButton) {
+        let email = self.emailTextField.text ?? ""
+        let password = self.passwordTextField.text ?? ""
         
+        // new customer create
+        Auth.auth().createUser(withEmail: email, password: password){ [weak self] authResult, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                let code = (error as NSError).code
+                
+                switch code {
+                case 17007:
+                    // email address is already in use by another account
+                    self.loginUser(withEmail: email, password: password)
+                default:
+                    self.errorMessageLabel.text = error.localizedDescription
+                }
+            } else {
+                self.showMainViewController()
+            }
+            
+        }
+    }
+    
+    private func loginUser(withEmail email: String, password: String) {
+        Auth.auth().signIn(withEmail: email, password: password) { [weak self] _, error in
+            guard let self = self else {return}
+            if let error = error {
+                self.errorMessageLabel.text = error.localizedDescription
+            } else {
+                self.showMainViewController()
+            }
+        }
+    }
+    
+    private func showMainViewController() {
+        let storyBoard = UIStoryboard(name: "Main", bundle: Bundle.main)
+        let mainViewController = storyBoard.instantiateViewController(withIdentifier: "MainViewController")
+        mainViewController.modalPresentationStyle = .fullScreen
+        self.navigationController?.show(mainViewController, sender: nil)
     }
 }
 

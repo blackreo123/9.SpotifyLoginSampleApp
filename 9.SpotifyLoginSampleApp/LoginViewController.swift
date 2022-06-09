@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import GoogleSignIn
+import Firebase
 
 class LoginViewController: UIViewController {
     
@@ -30,13 +31,33 @@ class LoginViewController: UIViewController {
         
         //NavigationBar 숨기기
         self.navigationController?.navigationBar.isHidden = true
-        
-        // google sign in
-        GIDSignIn.sharedInstance().presentingViewController = self
+    }
+    
+    private func showMainViewController() {
+        let storyBoard = UIStoryboard(name: "Main", bundle: Bundle.main)
+        let mainViewController = storyBoard.instantiateViewController(withIdentifier: "MainViewController")
+        mainViewController.modalPresentationStyle = .fullScreen
+        self.navigationController?.show(mainViewController, sender: nil)
     }
     
     @IBAction func googleLoginButtonTapped(_ sender: UIButton) {
-        GIDSignIn.sharedInstance().signIn()
+        guard let clientID = FirebaseApp.app()?.options.clientID else { return }
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.signIn(with: config, presenting: self) { [unowned self] user, error in
+          if let error = error {
+              print("ERROR", error.localizedDescription)
+            return
+          }
+
+          guard let authentication = user?.authentication,
+                let idToken = authentication.idToken else { return }
+
+          let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: authentication.accessToken)
+
+            Auth.auth().signIn(with: credential) { _, _ in
+                self.showMainViewController()
+            }
+        }
     }
     @IBAction func appleLoginButtonTapped(_ sender: UIButton) {
         

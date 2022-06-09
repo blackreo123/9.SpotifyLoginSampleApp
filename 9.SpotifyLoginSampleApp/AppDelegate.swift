@@ -11,28 +11,7 @@ import FirebaseAuth
 import GoogleSignIn
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
-    
-    func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!, withError error: Error!) {
-        if let error = error {
-            debugPrint("google sign in error: \(error.localizedDescription)")
-            return
-        }
-        
-        guard let authentication = user.authentication else {return}
-        let credential = GoogleAuthProvider.credential(withIDToken: authentication.idToken, accessToken: authentication.accessToken)
-        
-        Auth.auth().signIn(with: credential){ _, _ in
-            self.showMainViewController()
-        }
-    }
-    
-    private func showMainViewController() {
-        let storyBoard = UIStoryboard(name: "Main", bundle: Bundle.main)
-        let mainViewController = storyBoard.instantiateViewController(withIdentifier: "MainViewController")
-        mainViewController.modalPresentationStyle = .fullScreen
-        UIApplication.shared.windows.first?.rootViewController?.show(mainViewController, sender: nil)
-    }
+class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -40,14 +19,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
         //Firebase 초기화
         FirebaseApp.configure()
         
-        GIDSignIn.sharedInstance().clientID = FirebaseApp.app()?.options.clientID
-        GIDSignIn.sharedInstance().delegate = self
-        
         return true
     }
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        return GIDSignIn.sharedInstance().handle(url)
+        return GIDSignIn.sharedInstance.handle(url)
     }
     
     // MARK: UISceneSession Lifecycle
